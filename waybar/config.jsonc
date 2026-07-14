@@ -61,7 +61,8 @@
 
   "clock": {
     "timezone": "Europe/Paris",
-    "locale": "fr_FR.UTF-8",
+    //"locale": "fr_FR.UTF-8",
+    "locale": "en_US.UTF-8",
     "tooltip": false,
     "format": "{:L%H:%M:%S  -  %A %d %B}",
     "interval": 1
