@@ -1,0 +1,20 @@
+/* background */
+@define-color bg1 #1a1b26;
+@define-color bg2 #292a35;
+@define-color bg3 rgba(153, 209, 219, 0.10);
+
+/* foreground */
+@define-color fg1 #c6d0f5;
+@define-color fg2 #babbf1;
+@define-color fg3 #99d1db;
+
+/* misc */
+@define-color sdw1 rgba(0, 0, 0, 0.1);
+@define-color sdw2 rgba(153, 209, 219, 0.2);
+
+/* specific to module */
+@define-color red #e78284;
+@define-color blue #2196f3;
+@define-color green #a6d189;
+
+/* pomodoro is not done because it's bugged */

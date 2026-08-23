@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+THEMES_DIR="$HOME/.config/themes"
+CURRENT="$THEMES_DIR/current"
+
+# ─────────────────────────────────────────────
+# Configuration
+# ─────────────────────────────────────────────
+
+declare -A FILES=(
+    [hypr]="colors.lua"
+    [kitty]="colors.conf"
+    [rofi]="colors.rasi"
+    [waybar]="colors.css"
+)
+
+# ─────────────────────────────────────────────
+# Fonctions
+# ─────────────────────────────────────────────
+
+die() {
+    echo "Error: $*" >&2
+    exit 1
+}
+
+usage() {
+    echo "Usage: $(basename "$0") <theme>"
+    echo
+    echo "Available themes:"
+
+    for theme in "$THEMES_DIR"/*/; do
+        [[ -d "$theme" ]] || continue
+
+        name="$(basename "$theme")"
+
+        [[ "$name" == "current" ]] && continue
+
+        echo "  - $name"
+    done
+}
+
+# ─────────────────────────────────────────────
+# Vérifications
+# ─────────────────────────────────────────────
+
+[[ -d "$THEMES_DIR" ]] || die "Themes directory not found: $THEMES_DIR"
+
+if [[ $# -ne 1 ]]; then
+    usage
+    exit 1
+fi
+
+THEME="$1"
+THEME_DIR="$THEMES_DIR/$THEME"
+
+[[ "$THEME" != "current" ]] || die "'current' is not a theme"
+[[ -d "$THEME_DIR" ]] || die "Theme '$THEME' does not exist"
+
+# ─────────────────────────────────────────────
+# Validation des fichiers
+# ─────────────────────────────────────────────
+
+for app in "${!FILES[@]}"; do
+    file="${FILES[$app]}"
+    path="$THEME_DIR/$app/$file"
+
+    [[ -f "$path" ]] || die "Missing file: $path"
+done
+
+echo "Switching theme to: $THEME"
+
+# ─────────────────────────────────────────────
+# Current theme
+# ─────────────────────────────────────────────
+
+ln -sfn "$THEME_DIR" "$CURRENT"
+
+echo "  ✓ current -> $THEME"
+
+# ─────────────────────────────────────────────
+# Symlinks
+# ─────────────────────────────────────────────
+
+for app in "${!FILES[@]}"; do
+    file="${FILES[$app]}"
+
+    target="$CURRENT/$app/$file"
+    link="$HOME/.config/$app/$file"
+
+    # Vérifie que le dossier de destination existe
+    [[ -d "$HOME/.config/$app" ]] || {
+        echo "  ! Skipping $app: ~/.config/$app does not exist"
+        continue
+    }
+
+    # Supprime l'ancien fichier/symlink
+    rm -f "$link"
+
+    # Crée le nouveau symlink
+    ln -s "$target" "$link"
+
+    echo "  ✓ $app/$file"
+done
+
+# ─────────────────────────────────────────────
+# Reload Hyprland
+# ─────────────────────────────────────────────
+
+if command -v hyprctl >/dev/null 2>&1; then
+    if hyprctl reload >/dev/null 2>&1; then
+        echo "  ✓ Hyprland reloaded"
+    else
+        echo "  ! Could not reload Hyprland"
+    fi
+else
+    echo "  ! hyprctl not found"
+fi
+
+# ─────────────────────────────────────────────
+# Restart Waybar
+# ─────────────────────────────────────────────
+
+if command -v waybar >/dev/null 2>&1; then
+    pkill -x waybar 2>/dev/null || true
+
+    sleep 0.2
+
+    waybar >/dev/null 2>&1 & disown
+
+    echo "  ✓ Waybar restarted"
+else
+    echo "  ! Waybar not found"
+fi
+
+echo
+echo "Theme switched to '$THEME'."

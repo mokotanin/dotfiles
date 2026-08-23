@@ -1,0 +1,1 @@
+/home/nino-nakano/.config/themes/current/hypr/colors.lua
