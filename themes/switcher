@@ -5,21 +5,6 @@ set -euo pipefail
 THEMES_DIR="$HOME/.config/themes"
 CURRENT="$THEMES_DIR/current"
 
-# ─────────────────────────────────────────────
-# Configuration
-# ─────────────────────────────────────────────
-
-declare -A FILES=(
-    [hypr]="colors.lua"
-    [kitty]="colors.conf"
-    [rofi]="colors.rasi"
-    [waybar]="colors.css"
-)
-
-# ─────────────────────────────────────────────
-# Fonctions
-# ─────────────────────────────────────────────
-
 die() {
     echo "Error: $*" >&2
     exit 1
@@ -34,18 +19,13 @@ usage() {
         [[ -d "$theme" ]] || continue
 
         name="$(basename "$theme")"
-
         [[ "$name" == "current" ]] && continue
 
         echo "  - $name"
     done
 }
 
-# ─────────────────────────────────────────────
-# Vérifications
-# ─────────────────────────────────────────────
-
-[[ -d "$THEMES_DIR" ]] || die "Themes directory not found: $THEMES_DIR"
+[[ -d "$THEMES_DIR" ]] || die "Themes directory not found"
 
 if [[ $# -ne 1 ]]; then
     usage
@@ -55,83 +35,59 @@ fi
 THEME="$1"
 THEME_DIR="$THEMES_DIR/$THEME"
 
-[[ "$THEME" != "current" ]] || die "'current' is not a theme"
 [[ -d "$THEME_DIR" ]] || die "Theme '$THEME' does not exist"
-
-# ─────────────────────────────────────────────
-# Validation des fichiers
-# ─────────────────────────────────────────────
-
-for app in "${!FILES[@]}"; do
-    file="${FILES[$app]}"
-    path="$THEME_DIR/$app/$file"
-
-    [[ -f "$path" ]] || die "Missing file: $path"
-done
 
 echo "Switching theme to: $THEME"
 
-# ─────────────────────────────────────────────
 # Current theme
-# ─────────────────────────────────────────────
-
 ln -sfn "$THEME_DIR" "$CURRENT"
 
 echo "  ✓ current -> $THEME"
 
-# ─────────────────────────────────────────────
 # Symlinks
-# ─────────────────────────────────────────────
+for app_dir in "$THEME_DIR"/*; do
+    [[ -d "$app_dir" ]] || continue
 
-for app in "${!FILES[@]}"; do
-    file="${FILES[$app]}"
+    app="$(basename "$app_dir")"
+    target_dir="$HOME/.config/$app"
 
-    target="$CURRENT/$app/$file"
-    link="$HOME/.config/$app/$file"
+    # Crée le dossier si nécessaire
+    mkdir -p "$target_dir"
 
-    # Vérifie que le dossier de destination existe
-    [[ -d "$HOME/.config/$app" ]] || {
-        echo "  ! Skipping $app: ~/.config/$app does not exist"
-        continue
-    }
+    for file in "$app_dir"/*; do
+        [[ -f "$file" ]] || continue
 
-    # Supprime l'ancien fichier/symlink
-    rm -f "$link"
+        filename="$(basename "$file")"
 
-    # Crée le nouveau symlink
-    ln -s "$target" "$link"
+        rm -f "$target_dir/$filename"
 
-    echo "  ✓ $app/$file"
+        ln -s "$CURRENT/$app/$filename" \
+              "$target_dir/$filename"
+
+        echo "  ✓ $app/$filename"
+    done
 done
 
-# ─────────────────────────────────────────────
 # Reload Hyprland
-# ─────────────────────────────────────────────
-
 if command -v hyprctl >/dev/null 2>&1; then
-    if hyprctl reload >/dev/null 2>&1; then
-        echo "  ✓ Hyprland reloaded"
-    else
-        echo "  ! Could not reload Hyprland"
-    fi
-else
-    echo "  ! hyprctl not found"
+    hyprctl reload >/dev/null 2>&1 || true
+    echo "  ✓ Hyprland reloaded"
 fi
 
-# ─────────────────────────────────────────────
-# Restart Waybar
-# ─────────────────────────────────────────────
+# Reload Hyprpaperr
+if command -v hyprpaper >/dev/null 2>&1; then
+    pkill -x hyprpaper 2>/dev/null || true
+    sleep 0.2
+    hyprpaper >/dev/null 2>&1 & disown
+    echo "  ✓ Hyprpaper reloaded"
+fi
 
+# Restart Waybar
 if command -v waybar >/dev/null 2>&1; then
     pkill -x waybar 2>/dev/null || true
-
     sleep 0.2
-
     waybar >/dev/null 2>&1 & disown
-
     echo "  ✓ Waybar restarted"
-else
-    echo "  ! Waybar not found"
 fi
 
 echo

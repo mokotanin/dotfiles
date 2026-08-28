@@ -1,0 +1,23 @@
+* {
+  /* main bg */
+  bg0     : #D9BABA;
+  /* search bar bg */
+  bg1     : rgba(140, 74, 74, 0.1);
+  /* selected bg */
+  bg2     : #d4a2a2;
+  /* main border */
+  bg3     : #8C4A4A;
+  fg0     : #8C4A4A;
+  fg1     : #e78284;
+  fg2     : #A6686E;
+  red     : #e78284;
+  green   : #A6686E;
+  yellow  : #A6686E;
+  /* main font color */
+  blue    : #8C4A4A;
+  magenta : #A6686E;
+  cyan    : #A6686E;
+
+  accent: @red;
+  urgent: @yellow;
+}
