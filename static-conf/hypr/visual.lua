@@ -1,4 +1,4 @@
--- Refer to https://wiki.hypr.land/Configuring/Basics/Variables/
+--- dynamic file
 
 local colors = require("colors")
 

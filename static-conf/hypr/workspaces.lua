@@ -44,26 +44,26 @@ hl.window_rule({
     float = true,
 })
 
---hl.window_rule({
---    name = "kitty_float_workspace1",
---    match = { class = "kitty", workspace = "1" },
---    float = true,
---})
+hl.window_rule({
+    name = "kitty_float_workspace1",
+    match = { class = "kitty", workspace = "1" },
+    float = true,
+})
 
 hl.window_rule({
     name = "kitty_transparency",
     match = { class = "kitty" },
-    opacity = "1"
+    opacity = "0.98 0.96"
 })
 
---hl.window_rule({
---    name = "kitty_floating",
---    match = { class = "floating-term" },
---    float = true,
---    center = true,
---    size = "800 500",
---    opacity = "0.98 0.96"
---})
+hl.window_rule({
+    name = "kitty_floating",
+    match = { class = "floating-term" },
+    float = true,
+    center = true,
+    size = "800 500",
+    opacity = "0.98 0.96"
+})
 
 -- ### LINKTUI TOP RIGHT WINDOW RULE ###
 hl.window_rule({

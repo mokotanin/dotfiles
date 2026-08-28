@@ -20,6 +20,9 @@ themes
     ├── rofi
     └── waybar
 ```
+
+> [!NOTE]
+> Each theme changes the config and colors of the applications so every config will be found in the theme folder.
 ## Usage
 First, make the script executable:
 ```
